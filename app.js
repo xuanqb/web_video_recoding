@@ -2,8 +2,14 @@ const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const cors = require("cors");
 const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
 const port = 3000;
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
 
 // 创建一个SQLite数据库连接
 const db = new sqlite3.Database('conf/video.db', (err) => {
