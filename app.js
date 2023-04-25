@@ -3,7 +3,9 @@ const express = require('express');
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const path = require('path');
+const dateUtil = require('./utils/DateUtil')
 const app = express();
+
 const port = 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -72,6 +74,10 @@ app.get('/recentUnwatched', (req, res) => {
         } else {
             rows = rows.map(value => {
                 value.decodeURI = decodeURIComponent(value.url);
+                // 总进度
+                value.formatDuration = dateUtil.formatTime(value.duration);
+                // 当前进度
+                value.formatProgress = dateUtil.formatTime(value.progress);
                 return value;
             })
             res.status(200).json({code: 200, rows});
