@@ -73,11 +73,10 @@ app.get('/recentUnwatched', (req, res) => {
             res.status(500).send('Error querying video data from database');
         } else {
             rows = rows.map(value => {
-                value.decodeURI = decodeURIComponent(value.url);
                 // 总进度
-                value.formatDuration = dateUtil.formatTime(value.duration);
+                value.duration = dateUtil.formatTime(value.duration);
                 // 当前进度
-                value.formatProgress = dateUtil.formatTime(value.progress);
+                value.progress = dateUtil.formatTime(value.progress);
                 return value;
             })
             res.status(200).json({code: 200, rows});
