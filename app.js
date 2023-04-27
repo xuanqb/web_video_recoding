@@ -67,7 +67,7 @@ app.post('/getVideo', (req, res) => {
 
 // 获取最近的未观看完的视频
 app.get('/recentUnwatched', (req, res) => {
-    db.all(`SELECT url,duration,progress,created_at,updated_at FROM video  WHERE duration-progress>15 ORDER BY updated_at DESC LIMIT 10;`, function (err, rows) {
+    db.all(`SELECT url,duration,progress,created_at,updated_at FROM video  WHERE duration-progress>120 ORDER BY updated_at DESC LIMIT 10;`, function (err, rows) {
         if (err) {
             console.error(err.message);
             res.status(500).send('Error querying video data from database');
