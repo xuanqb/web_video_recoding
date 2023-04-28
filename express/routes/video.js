@@ -1,28 +1,59 @@
 const {models} = require('../../sequelize');
+const sequelize = require('../../sequelize');
+const {Op} = require('sequelize');
+
 const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
     const users = await models.video.findAll();
-    res.status(200).json(users);
+    res.success(users);
+}
+
+async function getByUrl(req, res) {
+    const videos = await getVideoByUrl(req.body.unique_url)
+    res.success(videos);
 };
 
-async function getById(req, res) {
-    const id = getIdParam(req);
-    const user = await models.video.findByPk(id);
-    if (user) {
-        res.status(200).json(user);
-    } else {
-        res.status(404).send('404 - Not found');
-    }
-};
+async function recentUnwatched(req, res) {
+    const videos = await sequelize.query("SELECT * FROM video  WHERE duration-progress>120 ORDER BY updatedAt DESC LIMIT 10", {
+        model: models.video, mapToModel: true
+    })
+    res.success(videos);
+}
+
+async function getVideoByUrl(url) {
+    return await models.video.findOne({
+        where: {
+            unique_url: {
+                [Op.eq]: url
+            }
+        }
+    })
+}
 
 async function create(req, res) {
     if (req.body.id) {
-        res.status(400).send(`Bad request: ID should not be provided, since it is determined automatically by the database.`)
-    } else {
-        await models.video.create(req.body);
-        res.status(201).end();
+        res.fail(`Bad request: ID should not be provided, since it is determined automatically by the database.`)
     }
+    const user = await models.video.findOne({
+        attributes: ['unique_url'], where: {
+            unique_url: {
+                [Op.eq]: req.body.unique_url
+            }
+        }
+    })
+    if (!user) {
+        await models.video.create(req.body);
+    } else {
+        models.video.update(req.body, {
+            where: {
+                unique_url: {
+                    [Op.eq]: req.body.unique_url
+                }
+            }
+        })
+    }
+    res.status(201).end();
 };
 
 async function update(req, res) {
@@ -52,9 +83,5 @@ async function remove(req, res) {
 };
 
 module.exports = {
-    getAll,
-    getById,
-    create,
-    update,
-    remove,
+    getAll, getByUrl, create, update, remove, recentUnwatched,
 };

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require("cors");
 
 const routes = {
     video: require('./routes/video'),
@@ -8,6 +9,7 @@ const routes = {
 
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, '../public')));
@@ -29,6 +31,35 @@ app.get('/', (req, res) => {
 		<h2>Hello, Sequelize + Express!</h2>
 	`);
 });
+
+const responseMiddleware = (req, res, next) => {
+    res.sendResponse = (code, data) => {
+        const responseObj = {
+            code,
+            data
+        };
+        res.status(code).json(responseObj);
+    };
+    res.success = (data) => {
+        const code = 200;
+        const responseObj = {
+            code,
+            data
+        };
+        res.status(code).json(responseObj);
+    };
+    res.fail = (data) => {
+        const code = 400;
+        const responseObj = {
+            code,
+            data
+        };
+        res.status(200).json(responseObj);
+    }
+    next();
+};
+
+app.use(responseMiddleware);
 
 // We define the standard REST APIs for each route (if they exist).
 for (const [routeName, routeController] of Object.entries(routes)) {
@@ -62,6 +93,8 @@ for (const [routeName, routeController] of Object.entries(routes)) {
             makeHandlerAwareOfAsyncErrors(routeController.remove)
         );
     }
+    app.post('/api/video/getByUrl', routes.video.getByUrl);
+    app.get('/api/video/recentUnwatched', routes.video.recentUnwatched);
 }
 
 module.exports = app;
