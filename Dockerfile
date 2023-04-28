@@ -16,7 +16,7 @@ WORKDIR /app
 COPY --from=build /app/ .
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 3666
 
 # 运行应用程序
 CMD ["node", "index.js"]
