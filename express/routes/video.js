@@ -78,16 +78,16 @@ async function update(req, res) {
 
 async function updatePercentage(req, res) {
     // 当前播放进度
-    const {percentage} = req.query;
-    if (!percentage) {
-        res.fail('{percentage} 进度不存在');
+    const {p} = req.query;
+    if (!p) {
+        res.fail('{p} 进度不存在');
     }
     const id = getIdParam(req);
     const videoInfo = await models.video.findByPk(id)
     if (videoInfo == null) {
         res.fail('记录不存在');
     }
-    videoInfo.progress = videoInfo.duration * (percentage / 100);
+    videoInfo.progress = videoInfo.duration * (p / 100);
     await videoInfo.save();
     res.success();
 
