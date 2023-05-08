@@ -76,6 +76,23 @@ async function update(req, res) {
     }
 };
 
+async function updatePercentage(req, res) {
+    // 当前播放进度
+    const {percentage} = req.query;
+    if (!percentage) {
+        res.fail('{percentage} 进度不存在');
+    }
+    const id = getIdParam(req);
+    const videoInfo = await models.video.findByPk(id)
+    if (videoInfo == null) {
+        res.fail('记录不存在');
+    }
+    videoInfo.progress = videoInfo.duration * (percentage / 100);
+    await videoInfo.save();
+    res.success();
+
+}
+
 async function remove(req, res) {
     const id = getIdParam(req);
     await models.video.destroy({
@@ -87,5 +104,5 @@ async function remove(req, res) {
 };
 
 module.exports = {
-    getAll, getByUrl, create, update, remove, recentUnwatched,
+    getAll, getByUrl, create, update, remove, recentUnwatched, updatePercentage
 };

@@ -94,6 +94,7 @@ for (const [routeName, routeController] of Object.entries(routes)) {
         );
     }
     app.post('/api/video/getByUrl', routes.video.getByUrl);
+    app.get('/api/video/updatePercentage/:id', routes.video.updatePercentage);
     app.get('/api/video/recentUnwatched', routes.video.recentUnwatched);
 }
 
