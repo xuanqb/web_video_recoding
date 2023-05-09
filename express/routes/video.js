@@ -1,6 +1,7 @@
 const {models} = require('../../sequelize');
 const sequelize = require('../../sequelize');
 const {Op} = require('sequelize');
+const dateUtil = require('../../utils/DateUtil')
 
 const {getIdParam} = require('../helpers');
 
@@ -20,6 +21,10 @@ async function recentUnwatched(req, res) {
     })
     videos.forEach(video => {
         video.dataValues.percentage = ((video.progress / video.duration) * 100).toFixed(2) + '%'
+        // 总进度
+        video.duration = dateUtil.formatTime(video.duration);
+        // 当前进度
+        video.progress = dateUtil.formatTime(video.progress);
         return video
     })
     res.success(videos);
