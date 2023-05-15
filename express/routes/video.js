@@ -16,7 +16,7 @@ async function getByUrl(req, res) {
 };
 
 async function recentUnwatched(req, res) {
-    const videos = await sequelize.query("SELECT id, unique_url, duration, progress, createdAt, updatedAt FROM video  WHERE duration-progress>120 ORDER BY updatedAt DESC LIMIT 10", {
+    const videos = await sequelize.query("SELECT id, unique_url, duration, progress, createdAt, updatedAt FROM video  WHERE duration-progress>20 ORDER BY updatedAt DESC LIMIT 10", {
         model: models.video, mapToModel: true
     })
     videos.forEach(video => {
