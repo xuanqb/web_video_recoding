@@ -1,6 +1,7 @@
 const {models} = require('../../sequelize');
 const sequelize = require('../../sequelize');
 const {Op} = require('sequelize');
+const dateUtil = require('../../utils/DateUtil')
 
 const {getIdParam} = require('../helpers');
 
@@ -15,11 +16,15 @@ async function getByUrl(req, res) {
 };
 
 async function recentUnwatched(req, res) {
-    const videos = await sequelize.query("SELECT id, unique_url, duration, progress, createdAt, updatedAt FROM video  WHERE duration-progress>120 ORDER BY updatedAt DESC LIMIT 10", {
+    const videos = await sequelize.query("SELECT id, unique_url, duration, progress, createdAt, updatedAt FROM video  WHERE duration-progress>20 ORDER BY updatedAt DESC LIMIT 10", {
         model: models.video, mapToModel: true
     })
     videos.forEach(video => {
         video.dataValues.percentage = ((video.progress / video.duration) * 100).toFixed(2) + '%'
+        // 总进度
+        video.duration = dateUtil.formatTime(video.duration);
+        // 当前进度
+        video.progress = dateUtil.formatTime(video.progress);
         return video
     })
     res.success(videos);
