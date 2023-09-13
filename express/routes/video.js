@@ -5,7 +5,7 @@ const {Op} = require('sequelize');
 const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
-    const users = await models.video.findAll();
+    const users = await models.video.findAll({order:[['createdAt', 'DESC']]});
     res.success(users);
 }
 
