@@ -7,9 +7,9 @@ const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
     condition = {order: [['createdAt', 'DESC']], limit: 100};
-    let {url, orderBy, orderByCol} = req.query
-    if (!orderByCol) {
-        orderByCol = 'DESC'
+    let {url, orderBy, orderByDirection} = req.query
+    if (!orderByDirection) {
+        orderByDirection = 'DESC'
     }
     if (url) {
         condition['where'] = {
@@ -19,7 +19,7 @@ async function getAll(req, res) {
         };
     }
     if (orderBy) {
-        condition['order'] = [[orderBy, orderByCol]]
+        condition['order'] = [[orderBy, orderByDirection]]
     }
     const videos = await models.video.findAll(condition);
     format(videos);
