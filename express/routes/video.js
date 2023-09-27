@@ -6,7 +6,15 @@ const dateUtil = require('../../utils/DateUtil')
 const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
-    const videos = await models.video.findAll({order: [['createdAt', 'DESC']]});
+    condition = {order: [['createdAt', 'DESC']], limit: 100};
+    if (req.query.url) {
+        condition['where'] = {
+            unique_url: {
+                [Op.like]: '%' + req.query.url + '%'
+            }
+        }
+    }
+    const videos = await models.video.findAll(condition);
     format(videos);
     res.success(videos);
 }
@@ -22,12 +30,12 @@ async function recentUnwatched(req, res) {
     })
     const watchTodayDurationArr = await sequelize.query("select CONCAT(FLOOR(seconds / 3600), '小时 ',FLOOR((seconds % 3600) / 60), '分钟 ',seconds % 60, '秒') AS formatted_time from (select sum(progress) as seconds from video where updatedAt >= curdate()) as t;", {type: QueryTypes.SELECT})
     const watchTodayDuration = watchTodayDurationArr[0].formatted_time
-    const avgDurationArr = await sequelize.query("select CONCAT(FLOOR(seconds / 3600), '小时 ',FLOOR((seconds % 3600) / 60), '分钟 ',seconds % 60, '秒') AS formatted_time from (select FLOOR(sum(progress) / TIMESTAMPDIFF(DAY, min(createdAt), now())) as seconds from video) as t;",{type: QueryTypes.SELECT});
+    const avgDurationArr = await sequelize.query("select CONCAT(FLOOR(seconds / 3600), '小时 ',FLOOR((seconds % 3600) / 60), '分钟 ',seconds % 60, '秒') AS formatted_time from (select FLOOR(sum(progress) / TIMESTAMPDIFF(DAY, min(createdAt), now())) as seconds from video) as t;", {type: QueryTypes.SELECT});
     const avgDuration = avgDurationArr[0].formatted_time
     format(videos);
-    const data ={
-        statistics:{
-            watchTodayDuration,avgDuration
+    const data = {
+        statistics: {
+            watchTodayDuration, avgDuration
         },
         recentUnwatched: videos,
     }
