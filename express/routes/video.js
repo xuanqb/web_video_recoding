@@ -7,12 +7,19 @@ const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
     condition = {order: [['createdAt', 'DESC']], limit: 100};
-    if (req.query.url) {
+    let {url, orderBy, orderByCol} = req.query
+    if (!orderByCol) {
+        orderByCol = 'DESC'
+    }
+    if (url) {
         condition['where'] = {
             unique_url: {
                 [Op.like]: '%' + req.query.url + '%'
             }
-        }
+        };
+    }
+    if (orderBy) {
+        condition['order'] = [[orderBy, orderByCol]]
     }
     const videos = await models.video.findAll(condition);
     format(videos);
