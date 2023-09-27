@@ -7,7 +7,7 @@ const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
     condition = {order: [['createdAt', 'DESC']], limit: 100};
-    let {url, orderBy, orderByDirection} = req.query
+    let {url, orderBy, orderByDirection, filterWatched} = req.query
     if (!orderByDirection) {
         orderByDirection = 'DESC'
     }
@@ -17,6 +17,9 @@ async function getAll(req, res) {
                 [Op.like]: '%' + req.query.url + '%'
             }
         };
+    }
+    if (filterWatched && filterWatched === 'true') {
+        condition['where']['duration'] = {[Op.gt]: sequelize.literal('progress + 20')}
     }
     if (orderBy) {
         condition['order'] = [[orderBy, orderByDirection]]
