@@ -19,7 +19,12 @@ async function getAll(req, res) {
         };
     }
     if (filterWatched && filterWatched === 'true') {
-        condition['where']['duration'] = {[Op.gt]: sequelize.literal('progress + 20')}
+        condition['where']['duration'] = {
+            [Op.or]: [
+                {[Op.gt]: sequelize.literal('progress + 20')},
+                {[Op.eq]: 0}]
+
+        }
     }
     if (orderBy) {
         condition['order'] = [[orderBy, orderByDirection]]
