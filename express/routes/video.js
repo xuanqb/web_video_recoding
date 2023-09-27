@@ -6,7 +6,7 @@ const dateUtil = require('../../utils/DateUtil')
 const {getIdParam} = require('../helpers');
 
 async function getAll(req, res) {
-    condition = {order: [['createdAt', 'DESC']], limit: 100};
+    condition = {order: [['createdAt', 'DESC']], where: {}, limit: 100};
     let {url, orderBy, orderByDirection, filterWatched} = req.query
     if (!orderByDirection) {
         orderByDirection = 'DESC'
