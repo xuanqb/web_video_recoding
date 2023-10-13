@@ -43,9 +43,12 @@ const responseMiddleware = (req, res, next) => {
     res.success = (data) => {
         const code = 200;
         const responseObj = {
-            code,
-            data
+            code
         };
+        if (data && Array.isArray(data)) {
+            responseObj['total'] = data.length
+        }
+        responseObj['data'] = data
         res.status(code).json(responseObj);
     };
     res.fail = (data) => {
