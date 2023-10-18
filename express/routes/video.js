@@ -43,9 +43,9 @@ async function recentUnwatched(req, res) {
     const videos = await sequelize.query("SELECT id, unique_url, duration, progress, createdAt, updatedAt FROM video  WHERE duration-progress>20 ORDER BY updatedAt DESC LIMIT 10", {
         model: models.video, mapToModel: true
     })
-    const watchTodayDurationArr = await sequelize.query("select CONCAT(FLOOR(seconds / 3600), '小时 ',FLOOR((seconds % 3600) / 60), '分钟 ',seconds % 60, '秒') AS formatted_time from (select sum(progress) as seconds from video where updatedAt >= curdate()) as t;", {type: QueryTypes.SELECT})
-    const watchTodayDuration = watchTodayDurationArr[0].formatted_time
-    const avgDurationArr = await sequelize.query("select CONCAT(FLOOR(seconds / 3600), '小时 ',FLOOR((seconds % 3600) / 60), '分钟 ',seconds % 60, '秒') AS formatted_time from (select FLOOR(sum(progress) / TIMESTAMPDIFF(DAY, min(createdAt), now())) as seconds from video) as t;", {type: QueryTypes.SELECT});
+    const watchTodayDurationArr = await sequelize.query("select CONCAT(              FLOOR(watch_time / 3600), '时 ',              FLOOR((watch_time % 3600) / 60), '分 ',              watch_time % 60, '秒'          ) AS formatted_time from video_watching_data where date >= curdate();", {type: QueryTypes.SELECT})
+    const watchTodayDuration = watchTodayDurationArr && watchTodayDurationArr[0] ? watchTodayDurationArr[0].formatted_time : '0时 0分 0秒'
+    const avgDurationArr = await sequelize.query("select CONCAT(              FLOOR(seconds / 3600), '时 ',              FLOOR((seconds % 3600) / 60), '分 ',              seconds % 60, '秒'          ) AS formatted_time from (select FLOOR(sum(watch_time) / TIMESTAMPDIFF(DAY, (select min(t.createdAt) from video as t), now())) as seconds     from video_watching_data) as t", {type: QueryTypes.SELECT});
     const avgDuration = avgDurationArr[0].formatted_time
     format(videos);
     const data = {
@@ -78,10 +78,27 @@ async function getVideoByUrl(url) {
     })
 }
 
+async function updateWatchTime(watch_time) {
+    if (watch_time) {
+        //     查询今天是否播放过视频
+        const count = await sequelize.query("select count(id) as count from video_watching_data where date >= curdate()", {type: QueryTypes.SELECT})
+        // 播放过
+        if (count[0].count) {
+            sequelize.query(`update video_watching_data set watch_time=watch_time + ${watch_time} where date >= curdate()`)
+        } else {
+            //     没有播放过
+            sequelize.query(`insert into video_watching_data(watch_time, date) value (${watch_time},curdate())`)
+        }
+    }
+}
+
 async function create(req, res) {
     if (req.body.id) {
         res.fail(`Bad request: ID should not be provided, since it is determined automatically by the database.`)
     }
+    // 更新播放时长
+    await updateWatchTime(req.body.watch_time);
+
     const user = await models.video.findOne({
         attributes: ['unique_url'], where: {
             unique_url: {
@@ -113,6 +130,7 @@ async function update(req, res) {
                 id: id
             }
         });
+        await updateWatchTime(req.body.watch_time)
         res.status(200).end();
     } else {
         res.status(400).send(`Bad request: param ID (${id}) does not match body ID (${req.body.id}).`);

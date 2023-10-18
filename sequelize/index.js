@@ -16,6 +16,7 @@ const sequelize = new Sequelize(config.database.database, config.database.userna
 
 const modelDefiners = [
     require('./models/video.model'),
+    require('./models/video_watching_data.model'),
 ];
 
 // We define all models according to their files.
