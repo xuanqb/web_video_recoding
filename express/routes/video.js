@@ -46,11 +46,13 @@ async function recentUnwatched(req, res) {
     const watchTodayDurationArr = await sequelize.query("select CONCAT(              FLOOR(watch_time / 3600), '时 ',              FLOOR((watch_time % 3600) / 60), '分 ',              watch_time % 60, '秒'          ) AS formatted_time from video_watching_data where date >= curdate();", {type: QueryTypes.SELECT})
     const watchTodayDuration = watchTodayDurationArr && watchTodayDurationArr[0] ? watchTodayDurationArr[0].formatted_time : '0时 0分 0秒'
     const avgDurationArr = await sequelize.query("select CONCAT(              FLOOR(seconds / 3600), '时 ',              FLOOR((seconds % 3600) / 60), '分 ',              seconds % 60, '秒'          ) AS formatted_time from (select FLOOR(sum(watch_time) / TIMESTAMPDIFF(DAY, (select min(t.createdAt) from video as t), now())) as seconds     from video_watching_data) as t", {type: QueryTypes.SELECT});
+    const watchYesterdayDurationArr = await sequelize.query("select CONCAT(FLOOR(watch_time / 3600), '时 ', FLOOR((watch_time % 3600) / 60), '分 ', watch_time % 60,'秒') AS formatted_time from video_watching_data WHERE date = CURDATE() - INTERVAL 1 DAY", {type: QueryTypes.SELECT});
     const avgDuration = avgDurationArr[0].formatted_time
+    const watchYesterdayDuration = watchYesterdayDurationArr[0].formatted_time
     format(videos);
     const data = {
         statistics: {
-            watchTodayDuration, avgDuration
+            watchTodayDuration, avgDuration, watchYesterdayDuration
         },
         recentUnwatched: videos,
     }
